@@ -4,85 +4,78 @@ from typing import Optional
 
 
 class BaseRootSolver:
-    _xA: PrecisionFloat = PrecisionFloat('0.0', PrecisionFloat.getDps())
-    _xB: PrecisionFloat = PrecisionFloat('0.0', PrecisionFloat.getDps())
-    _function: Function = None
+    def __init__(self):
+        # Atributos de instância
+        self._xA: PrecisionFloat = PrecisionFloat(
+            '0.0', PrecisionFloat.getDps())
+        self._xB: PrecisionFloat = PrecisionFloat(
+            '0.0', PrecisionFloat.getDps())
+        self._function: Function = None
 
-    _errorPrecisionFloat: PrecisionFloat = None
-    _errorInt: int = 5
-    _existRoot: bool = True
-    _cauntIteration: int = 0
-    _iterationValues: list[list[PrecisionFloat]] = []
+        self._errorPrecisionFloat: PrecisionFloat = None
+        self._errorInt: int = 5
+        self._existRoot: bool = True
+        self._cauntIteration: int = 0
+        self._iterationValues: list[list[PrecisionFloat]] = []
 
-    @staticmethod
-    def getQuantIteraion() -> int:
-        return BaseRootSolver._cauntIteration
+        # Inicializar as variáveis da instância
 
-    @staticmethod
-    def getIterationValues() -> list[list[PrecisionFloat]]:
-        return BaseRootSolver._iterationValues
+    def getQuantIteration(self) -> int:
+        return self._cauntIteration
 
-    @staticmethod
-    def _testInterval(xB: PrecisionFloat, xA: PrecisionFloat) -> bool:
-        fun = BaseRootSolver._function
+    def getIterationValues(self) -> list[list[PrecisionFloat]]:
+        return self._iterationValues
 
-        fA = fun.getImage(xA)
-        fB = fun.getImage(xB)
+    def _testInterval(self, xB: PrecisionFloat, xA: PrecisionFloat) -> bool:
+        fun: Function = self._function
+
+        fA: PrecisionFloat = fun.getImage(xA)
+        fB: PrecisionFloat = fun.getImage(xB)
         return (fA * fB) < PrecisionFloat('0', PrecisionFloat.getDps())
 
-    @staticmethod
-    def _PrecisionFloatTruncate(number: PrecisionFloat) -> PrecisionFloat:
-        return round(number, BaseRootSolver._errorInt)
+    def _PrecisionFloatTruncate(self, number: PrecisionFloat) -> PrecisionFloat:
+        return round(number, self._errorInt)
 
-    @staticmethod
-    def _initializeVariables(expStr: str,
-                             interval: Optional[list[float]],
-                             error: int):
-        BaseRootSolver._errorPrecisionFloat = PrecisionFloat(
+    def _initializeVariables(self, expStr: str, interval: Optional[list[float]], error: int):
+        self._errorPrecisionFloat = PrecisionFloat(
             '10', PrecisionFloat.getDps()) ** PrecisionFloat(str(-error), PrecisionFloat.getDps())
 
-        BaseRootSolver._xA = PrecisionFloat(
+        self._xA = PrecisionFloat(
             str(interval[1]), PrecisionFloat.getDps())
-        BaseRootSolver._xB = PrecisionFloat(
+        self._xB = PrecisionFloat(
             str(interval[0]), PrecisionFloat.getDps())
 
-        if BaseRootSolver._xA < BaseRootSolver._xB:
-            aux = BaseRootSolver._xA
-            BaseRootSolver._xA = BaseRootSolver._xB
-            BaseRootSolver._xB = aux
-            pass
+        if self._xA < self._xB:
+            aux = self._xA
+            self._xA = self._xB
+            self._xB = aux
 
-        BaseRootSolver._function = Function(expStr)
-        BaseRootSolver._existRoot = True
-        BaseRootSolver._cauntIteration = 0
-        BaseRootSolver._errorInt = error
-        pass
+        self._function = Function(expStr)
+        self._existRoot = True
+        self._cauntIteration = 0
+        self._errorInt = error
 
-    @staticmethod
-    def _adjustIntervalIfNotImageExist() -> None:
-        if not BaseRootSolver._existRoot:
+    def _adjustIntervalIfNotImageExist(self) -> None:
+        if not self._existRoot:
             return
-        fun = BaseRootSolver._function
-        xA = BaseRootSolver._xA
-        xB = BaseRootSolver._xB
+        fun = self._function
+        xA = self._xA
+        xB = self._xB
 
         if fun.getImage(xA):
-            xA -= BaseRootSolver._errorPrecisionFloat
+            xA -= self._errorPrecisionFloat
         if fun.getImage(xB):
-            xB += BaseRootSolver._errorPrecisionFloat
+            xB += self._errorPrecisionFloat
 
-        BaseRootSolver._xA = xA
-        BaseRootSolver._xB = xB
-        pass
-    pass
+        self._xA = xA
+        self._xB = xB
 
-    @staticmethod
-    def _checkAndFindInterval() -> list[list[PrecisionFloat]]:
-        xA = BaseRootSolver._xA
-        xB = BaseRootSolver._xB
+    def _checkAndFindInterval(self) -> list[list[PrecisionFloat]]:
+        xA = self._xA
+        xB = self._xB
 
         listInterval: list[list[PrecisionFloat]] = []
-        if BaseRootSolver._testInterval(xA, xB):
+        if self._testInterval(xA, xB):
             listInterval.append([xB, xA])
             return listInterval
         return listInterval
@@ -121,7 +114,7 @@ class BisectionMethodRootSolver(BaseRootSolver):
         aproximateRoot: PrecisionFloat = PrecisionFloat(
             '0.0', PrecisionFloat.getDps())
 
-        fun = self._function
+        fun: Function = self._function
 
         if fun.getAbsImage(a) < self._errorPrecisionFloat:
             return a
@@ -134,9 +127,9 @@ class BisectionMethodRootSolver(BaseRootSolver):
                 b, a)
             absImageValue = fun.getAbsImage(aproximateRoot)
 
-            print(f'[{b}, {a}] => {aproximateRoot} : '
-                  + f'{absImageValue} > '
-                  + f'{self._errorPrecisionFloat}')
+            # print(f'[{b}, {a}] => {aproximateRoot} : '
+            #       + f'{absImageValue} > '
+            #       + f'{self._errorPrecisionFloat}')
 
             self._iterationValues.append(
                 [self._cauntIteration, b, a, aproximateRoot, absImageValue,

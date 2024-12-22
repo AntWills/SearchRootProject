@@ -1,8 +1,7 @@
 from ..entities.Math import ExpressionSolver, Math
+from ..entities.SearchRootExp import *
 from sympy import *
-from ..entities.SearchRootExp import SearchRootExp
-import mpmath
-import numpy as np
+
 import re
 from prettytable import PrettyTable
 
@@ -22,8 +21,8 @@ def exibir_tabela(headers, dados):
         for valor in linha:
             str_valor = str(valor)
             # Limita cada valor a 30 caracteres, adicionando '...' se necessário
-            if len(str_valor) > 10:
-                str_valor = str_valor[:10] + '...'
+            if len(str_valor) > 15:
+                str_valor = str_valor[:15] + '...'
             linha_limitada.append(str_valor)
         dados_limitados.append(linha_limitada)
 
@@ -73,14 +72,15 @@ def testExp():
     #         SearchRootExp.getQuantIteraion()}'
     # )
 
-    root = SearchRootExp.bisectionMethod(exp1, intervalo1, error)
-    print(f'\nRaiz(Aproximada): {root} iterações: '
-          + f'{ SearchRootExp.getQuantIteraion()}')
+    searchData: SearchData = SearchRootExp.bisectionMethod(
+        exp1, intervalo1, error)
+    print(f'\nRaiz(Aproximada): {searchData.root} iterações: '
+          + f'{searchData.quantIteration}')
 
-    # print('\nOperações:\n\n')
-    # exibir_tabela(["Iteração", "xB", "xA",
-    #                "raiz aproximada", "imagem da função", "erro"],
-    #               SearchRootExp.getIterationValues())
+    print('\nOperações:\n\n')
+    exibir_tabela(["Iteração", "xB", "xA",
+                   "raiz aproximada", "imagem da função", "erro"],
+                  searchData.valuesPerIteration)
     # root = SearchRootExp.falsePositionMethod(exp, intervalo, error)
     # print(
     #     f'\nRaiz(Aproximada): {root} iterações: {
