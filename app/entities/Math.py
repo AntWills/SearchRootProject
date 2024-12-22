@@ -101,26 +101,38 @@ class Function():
         pass
 
     def getImage(self, xValue: PrecisionFloat) -> PrecisionFloat:
-        if not isinstance(xValue, PrecisionFloat):
-            xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
-        return ExpressionSolver.expression(self.exp, xValue)
+        try:
+            if not isinstance(xValue, PrecisionFloat):
+                xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
+            return ExpressionSolver.expression(self.exp, xValue)
+        except:
+            return None
 
     def getAbsImage(self, xValue: PrecisionFloat) -> PrecisionFloat:
-        if not isinstance(xValue, PrecisionFloat):
-            xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
-        return abs(self.getImage(xValue))
+        try:
+            if not isinstance(xValue, PrecisionFloat):
+                xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
+            return abs(self.getImage(xValue))
+        except:
+            return None
 
     def getImageOfDerivate(self, xValue: PrecisionFloat) -> PrecisionFloat:
-        if not isinstance(xValue, PrecisionFloat):
-            xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
+        try:
+            if not isinstance(xValue, PrecisionFloat):
+                xValue = PrecisionFloat(xValue, PrecisionFloat.getDps())
 
-        if not self.derivative:
-            x = symbols('x')
-            fun = sympify(self.exp)
+            if not self.derivative:
+                x = symbols('x')
+                fun = sympify(self.exp)
 
-            self.derivative = str(diff(fun, x))
+                self.derivative = str(diff(fun, x))
 
-        return ExpressionSolver.expression(self.derivative, xValue)
+            return ExpressionSolver.expression(self.derivative, xValue)
+        except:
+            return None
+
+    def __str__(self) -> str:
+        return self.exp
 
     pass
 

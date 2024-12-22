@@ -152,8 +152,7 @@ class BisectionMethodRootSolver(BaseRootSolver):
 
 
 class FalsePositionMethodRootSolver(BaseRootSolver):
-    @staticmethod
-    def solve(expStr: str,
+    def solve(self, expStr: str,
               interval: Optional[list[float]],
               error: int) -> Optional[PrecisionFloat]:
         if not expStr:
@@ -163,21 +162,63 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
         if error <= 0:
             raise ValueError('error não pode ser 0 ou negativo.')
 
-        FalsePositionMethodRootSolver.__initializeVariables(
+        super()._initializeVariables(
             expStr, interval, error)
-        return
+        super()._adjustIntervalIfNotImageExist()
+        listInterval = super()._checkAndFindInterval()
 
-    @staticmethod
-    def __initializeVariables(expStr: str,
-                              interval: Optional[list[float]],
-                              error: int):
-        super().__initializeVariables(expStr, interval, error)
-        pass
+        rootList: list[PrecisionFloat] = []
+        for intervals in listInterval:
+            rootList.append(
+                self.__getZeroFunction(intervals))
+            pass
+        return rootList
 
-    @staticmethod
-    def __getAproximateRootFalsePosition(numB: PrecisionFloat,
-                                         numA: PrecisionFloat) -> PrecisionFloat:
-        fun = super().__function
+    def __getZeroFunction(self, interval: list[PrecisionFloat]) -> Optional[PrecisionFloat]:
+        if not self._existRoot:
+            return None
+
+        a = PrecisionFloat(f'{interval[1]}', PrecisionFloat.getDps())
+        b = PrecisionFloat(f'{interval[0]}', PrecisionFloat.getDps())
+        aproximateRoot: PrecisionFloat = PrecisionFloat(
+            '0.0', PrecisionFloat.getDps())
+
+        fun: Function = self._function
+
+        if fun.getAbsImage(a) < self._errorPrecisionFloat:
+            return a
+        if fun.getAbsImage(b) < self._errorPrecisionFloat:
+            return b
+
+        while True:
+            self._cauntIteration += 1
+            aproximateRoot = self.__getAproximateRoot(
+                b, a)
+            absImageValue = fun.getAbsImage(aproximateRoot)
+
+            # print(f'[{b}, {a}] => {aproximateRoot} : '
+            #       + f'{absImageValue} > '
+            #       + f'{self._errorPrecisionFloat}')
+
+            self._iterationValues.append(
+                [self._cauntIteration, b, a, aproximateRoot, absImageValue,
+                    self._errorPrecisionFloat]
+            )
+
+            if absImageValue < self._errorPrecisionFloat:
+                break
+
+            if super()._testInterval(b, aproximateRoot):
+                a = aproximateRoot
+            else:
+                b = aproximateRoot
+            pass
+        # SearchRootExp.__typeSearch = 0
+        return super()._PrecisionFloatTruncate(aproximateRoot)
+
+    def __getAproximateRoot(self, numB: PrecisionFloat,
+                            numA: PrecisionFloat) -> PrecisionFloat:
+        fun: Function = self._function
 
         aux1 = numB * fun.getImage(numA) - numA * fun.getImage(numB)
         aux2 = fun.getImage(numA) - fun.getImage(numB)
@@ -185,6 +226,79 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
 
 
 class FixedPointMethodRootSolver(BaseRootSolver):
-    @staticmethod
-    def solve():
-        return
+    def solve(self, expStr: str, interval: Optional[list[float]],
+              listExpGx: list[str],
+              error: int) -> Optional[PrecisionFloat]:
+        if not expStr:
+            return None
+        if not isinstance(error, int):
+            raise ValueError('erro não pode ser diferente de int.')
+        if error <= 0:
+            raise ValueError('error não pode ser 0 ou negativo.')
+
+        self._initializeVariables(expStr, interval, listExpGx, error)
+
+        if self.__funGx == None:
+            return None
+
+        super()._adjustIntervalIfNotImageExist()
+        listInterval = super()._checkAndFindInterval()
+
+        rootList: list[PrecisionFloat] = []
+        for intervals in listInterval:
+            rootList.append(
+                self.__getZeroFunction(intervals))
+            pass
+        return rootList
+
+    def _initializeVariables(self, expStr: str, interval: Optional[list[float]],
+                             listExpGx: list[str],
+                             error: int):
+        super()._initializeVariables(expStr, interval, error)
+        self.__funGx = self.__getExpThatConverges(listExpGx)
+
+        pass
+
+    def __getExpThatConverges(self, listExpGx: list[str]) -> Optional[Function]:
+        for exp in listExpGx:
+            fun = Function(exp)
+
+            img_a = fun.getImageOfDerivate(self._xA)
+            img_b = fun.getImageOfDerivate(self._xB)
+
+            if not img_a == None and not img_b == None:
+                if abs(img_a) < 1 and abs(img_b) < 1:
+                    return fun
+            pass
+        return None
+
+    def __getZeroFunction(self, interval: list[PrecisionFloat]) -> Optional[PrecisionFloat]:
+        hypothesis = (interval[0] + interval[1]) / \
+            PrecisionFloat('2', PrecisionFloat.getDps())
+
+        fun: Function = self._function
+        funGx: Function = self.__funGx
+
+        currentX: PrecisionFloat = hypothesis
+        while True:
+            self._cauntIteration += 1
+            absImageValue = fun.getAbsImage(currentX)
+
+            if absImageValue < self._errorPrecisionFloat:
+                return currentX
+
+            nextX = funGx.getImage(currentX)
+
+            # print(f'X{self._cauntIteration} = {currentX} : {funGx}'
+            #       + f' => X{self._cauntIteration+1} = {nextX}'
+            #       + f' # Imagem: {absImageValue} < {self._errorPrecisionFloat}')
+
+            self._iterationValues.append(
+                [self._cauntIteration, currentX, absImageValue,
+                 self._errorPrecisionFloat, nextX
+                 ]
+            )
+
+            currentX = nextX
+            pass
+        return None

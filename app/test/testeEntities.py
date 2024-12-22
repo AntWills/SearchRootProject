@@ -13,7 +13,7 @@ def testAbs():
     print(f'{num1**num2}')
 
 
-def exibir_tabela(headers, dados):
+def exibir_tabela(headers, dados, maxLenData):
     dados_limitados = []
 
     for linha in dados:
@@ -21,8 +21,8 @@ def exibir_tabela(headers, dados):
         for valor in linha:
             str_valor = str(valor)
             # Limita cada valor a 30 caracteres, adicionando '...' se necessário
-            if len(str_valor) > 15:
-                str_valor = str_valor[:15] + '...'
+            if len(str_valor) > maxLenData:
+                str_valor = str_valor[:maxLenData] + '...'
             linha_limitada.append(str_valor)
         dados_limitados.append(linha_limitada)
 
@@ -72,15 +72,26 @@ def testExp():
     #         SearchRootExp.getQuantIteraion()}'
     # )
 
-    searchData: SearchData = SearchRootExp.bisectionMethod(
-        exp1, intervalo1, error)
+    function_str_1: str = 'x**3-x-1'
+    lista_teste_1: list[str] = [
+        '1/(x**2-1)',
+        '(x+1)**(1/3)'
+    ]
+    x_a_1, x_b_1 = 1, 2
+
+    searchData: SearchData = SearchRootExp.fixedPointMethod(
+        function_str_1, [x_a_1, x_b_1], lista_teste_1, 5)
     print(f'\nRaiz(Aproximada): {searchData.root} iterações: '
           + f'{searchData.quantIteration}')
 
     print('\nOperações:\n\n')
-    exibir_tabela(["Iteração", "xB", "xA",
-                   "raiz aproximada", "imagem da função", "erro"],
-                  searchData.valuesPerIteration)
+    # exibir_tabela(["Iteração", "xB", "xA",
+    #                "raiz aproximada", "F(Xn)", "erro"],
+    #               searchData.valuesPerIteration, 15)
+
+    exibir_tabela(["Iteração", "Xn", "F(Xn)", "erro", "Xn+1 = G(Xn)",],
+                  searchData.valuesPerIteration, 15)
+
     # root = SearchRootExp.falsePositionMethod(exp, intervalo, error)
     # print(
     #     f'\nRaiz(Aproximada): {root} iterações: {
