@@ -91,7 +91,7 @@ class BaseRootSolver:
 
         listInterval: list[list[PrecisionFloat]] = []
 
-        space = PrecisionFloat('0.025', PrecisionFloat.getDps())
+        space = PrecisionFloat('0.05', PrecisionFloat.getDps())
 
         auxA = xA
         auxB = xA - space
@@ -111,13 +111,7 @@ class BaseRootSolver:
 
 
 class BisectionMethodRootSolver(BaseRootSolver):
-    def solve(self, expStr: str,
-              interval: Optional[list[float]],
-              error: int) -> Optional[SearchData]:
-
-        # super()._initializeVariables(
-        #     expStr, interval, error)
-
+    def solve(self) -> Optional[list[SearchData]]:
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
@@ -180,25 +174,19 @@ class BisectionMethodRootSolver(BaseRootSolver):
 
 
 class FalsePositionMethodRootSolver(BaseRootSolver):
-    def solve(self, expStr: str,
-              interval: Optional[list[float]],
-              error: int) -> Optional[PrecisionFloat]:
-        if not expStr:
-            return None
-        if not isinstance(error, int):
-            raise ValueError('erro não pode ser diferente de int.')
-        if error <= 0:
-            raise ValueError('error não pode ser 0 ou negativo.')
-
-        # super()._initializeVariables(
-        #     expStr, interval, error)
+    def solve(self) -> Optional[list[SearchData]]:
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
         dataList: list[SearchData] = []
         for intervals in listInterval:
-            dataList.append(
-                self.__getZeroFunction(intervals))
+            data = SearchData(
+                self.__getZeroFunction(intervals),
+                self._cauntIteration,
+                self._iterationValues
+            )
+            dataList.append(data)
+            super()._initializeVariables()
             pass
         return dataList
 
@@ -224,10 +212,6 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
                 b, a)
             absImageValue = fun.getAbsImage(aproximateRoot)
 
-            # print(f'[{b}, {a}] => {aproximateRoot} : '
-            #       + f'{absImageValue} > '
-            #       + f'{self._errorPrecisionFloat}')
-
             self._iterationValues.append(
                 [self._cauntIteration, b, a, aproximateRoot, absImageValue,
                     self._errorPrecisionFloat]
@@ -241,7 +225,6 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
             else:
                 b = aproximateRoot
             pass
-        # SearchRootExp.__typeSearch = 0
         return super()._PrecisionFloatTruncate(aproximateRoot)
 
     def __getAproximateRoot(self, numB: PrecisionFloat,
@@ -254,30 +237,22 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
 
 
 class FixedPointMethodRootSolver(BaseRootSolver):
-    def solve(self, expStr: str, interval: Optional[list[float]],
-              listExpGx: list[str],
-              error: int) -> Optional[PrecisionFloat]:
-        if not expStr:
-            return None
-        if not isinstance(error, int):
-            raise ValueError('erro não pode ser diferente de int.')
-        if error <= 0:
-            raise ValueError('error não pode ser 0 ou negativo.')
-
-        self._initializeVariables(expStr, interval, listExpGx, error)
-
-        if self.__funGx == None:
-            return None
-
+    def solve(self) -> Optional[list[SearchData]]:
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
-        rootList: list[PrecisionFloat] = []
+        dataList: list[SearchData] = []
         for intervals in listInterval:
-            rootList.append(
-                self.__getZeroFunction(intervals))
+            super()._initializeVariables()
+            data = SearchData(
+                self.__getZeroFunction(intervals),
+                self._cauntIteration,
+                self._iterationValues
+            )
+            dataList.append(data)
+
             pass
-        return rootList
+        return dataList
 
     def _initializeVariables(self, expStr: str, interval: Optional[list[float]],
                              listExpGx: list[str],

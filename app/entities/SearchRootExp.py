@@ -10,19 +10,19 @@ class SearchRootExp:
                         error: int) -> Optional[list[SearchData]]:
         bisectionmethod = BisectionMethodRootSolver(expStr, interval, error)
 
-        return bisectionmethod.solve(expStr, interval, error)
+        return bisectionmethod.solve()
 
     @staticmethod
     def falsePositionMetho(expStr: str,
                            interval: Optional[list[float]],
                            error: int) -> Optional[SearchData]:
-        falsePosition = FalsePositionMethodRootSolver()
+        falsePosition = FalsePositionMethodRootSolver(expStr, interval, error)
 
-        root = falsePosition.solve(expStr, interval, error)
-        quantIteration = falsePosition.getQuantIteration()
-        valuesPerIteration = falsePosition.getIterationValues()
+        # root =
+        # quantIteration = falsePosition.getQuantIteration()
+        # valuesPerIteration = falsePosition.getIterationValues()
 
-        return SearchData(root, quantIteration, valuesPerIteration)
+        return falsePosition.solve()
 
     @staticmethod
     def fixedPointMethod(expStr: str, interval: Optional[list[float]],

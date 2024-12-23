@@ -82,7 +82,7 @@ def testExp():
     # ]
     # x_a_1, x_b_1 = 1, 2
 
-    searchDataList: SearchData = SearchRootExp.bisectionMethod(
+    searchDataList: SearchData = SearchRootExp.falsePositionMetho(
         exp4, intervalo4, 5)
 
     # searchDataList: SearchData = SearchRootExp.bisectionMethod(
@@ -99,9 +99,9 @@ def testExp():
         print('\nOperações:\n')
         exibir_tabela(["Iteração", "xB", "xA",
                        "raiz aproximada", "F(Xn)", "erro"],
-                      searchData.valuesPerIteration, error)
+                      searchData.valuesPerIteration, 15)
 
-        print('\n----------------------------------------------------\n')
+        print('\n###########################################################################\n')
 
     # exibir_tabela(["Iteração", "Xn", "F(Xn)", "erro", "Xn+1 = G(Xn)",],
     #               searchData.valuesPerIteration, 15)
