@@ -3,17 +3,46 @@ from .PrecisionFloat import PrecisionFloat
 from typing import Optional
 
 
-class BaseRootSolver:
-    def __init__(self):
-        # Atributos de instância
-        self._xA: PrecisionFloat = PrecisionFloat(
-            '0.0', PrecisionFloat.getDps())
-        self._xB: PrecisionFloat = PrecisionFloat(
-            '0.0', PrecisionFloat.getDps())
-        self._function: Function = None
+class SearchData:
+    def __init__(self, root: PrecisionFloat,
+                 quantIteration: int,
+                 valuesPerIteration: list[list[PrecisionFloat]],
+                 funGx: Optional[Function] = None):
+        self.root: PrecisionFloat = root
+        self.quantIteration: int = quantIteration
+        self.valuesPerIteration: list[list[PrecisionFloat]
+                                      ] = valuesPerIteration
+        self.funGx = funGx
+        pass
+    pass
 
-        self._errorPrecisionFloat: PrecisionFloat = None
-        self._errorInt: int = 5
+
+class BaseRootSolver:
+    def __init__(self, expStr: str, interval: list[PrecisionFloat], error: int):
+        # Atributos de instância
+
+        if not expStr:
+            raise ValueError('expStr não pode None.')
+        if not isinstance(error, int):
+            raise ValueError('Erro não pode ser diferente de int.')
+        if error <= 0:
+            raise ValueError('Error não pode ser 0 ou negativo.')
+
+        self._xA: PrecisionFloat = PrecisionFloat(
+            interval[1], PrecisionFloat.getDps())
+        self._xB: PrecisionFloat = PrecisionFloat(
+            interval[0], PrecisionFloat.getDps())
+        self._function: Function = Function(expStr)
+
+        if self._xA < self._xB:
+            aux = self._xA
+            self._xA = self._xB
+            self._xB = aux
+
+        self._errorPrecisionFloat: PrecisionFloat = PrecisionFloat(
+            '10', PrecisionFloat.getDps()) ** PrecisionFloat(str(-error), PrecisionFloat.getDps())
+        self._errorInt: int = error
+
         self._existRoot: bool = True
         self._cauntIteration: int = 0
         self._iterationValues: list[list[PrecisionFloat]] = []
@@ -36,24 +65,10 @@ class BaseRootSolver:
     def _PrecisionFloatTruncate(self, number: PrecisionFloat) -> PrecisionFloat:
         return round(number, self._errorInt)
 
-    def _initializeVariables(self, expStr: str, interval: Optional[list[float]], error: int):
-        self._errorPrecisionFloat = PrecisionFloat(
-            '10', PrecisionFloat.getDps()) ** PrecisionFloat(str(-error), PrecisionFloat.getDps())
-
-        self._xA = PrecisionFloat(
-            str(interval[1]), PrecisionFloat.getDps())
-        self._xB = PrecisionFloat(
-            str(interval[0]), PrecisionFloat.getDps())
-
-        if self._xA < self._xB:
-            aux = self._xA
-            self._xA = self._xB
-            self._xB = aux
-
-        self._function = Function(expStr)
-        self._existRoot = True
-        self._cauntIteration = 0
-        self._errorInt = error
+    def _initializeVariables(self):
+        self._existRoot: bool = True
+        self._cauntIteration: int = 0
+        self._iterationValues: list[list[PrecisionFloat]] = []
 
     def _adjustIntervalIfNotImageExist(self) -> None:
         if not self._existRoot:
@@ -75,35 +90,48 @@ class BaseRootSolver:
         xB = self._xB
 
         listInterval: list[list[PrecisionFloat]] = []
-        if self._testInterval(xA, xB):
-            listInterval.append([xB, xA])
-            return listInterval
+
+        space = PrecisionFloat('0.025', PrecisionFloat.getDps())
+
+        auxA = xA
+        auxB = xA - space
+
+        while xB <= auxB:
+            if self._testInterval(auxB, auxA):
+                listInterval.append([auxB, auxA])
+
+            auxA = auxB
+            auxB -= space
+            pass
+
+        if self._testInterval(xB, auxA):
+            listInterval.append([xB, auxA])
+
         return listInterval
 
 
 class BisectionMethodRootSolver(BaseRootSolver):
     def solve(self, expStr: str,
               interval: Optional[list[float]],
-              error: int) -> Optional[PrecisionFloat]:
+              error: int) -> Optional[SearchData]:
 
-        if not expStr:
-            return None
-        if not isinstance(error, int):
-            raise ValueError('erro não pode ser diferente de int.')
-        if error <= 0:
-            raise ValueError('error não pode ser 0 ou negativo.')
+        # super()._initializeVariables(
+        #     expStr, interval, error)
 
-        super()._initializeVariables(
-            expStr, interval, error)
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
-        rootList: list[PrecisionFloat] = []
+        dataList: list[SearchData] = []
         for intervals in listInterval:
-            rootList.append(
-                self.__getZeroFunction(intervals))
+            data = SearchData(
+                self.__getZeroFunction(intervals),
+                self._cauntIteration,
+                self._iterationValues
+            )
+            dataList.append(data)
+            super()._initializeVariables()
             pass
-        return rootList
+        return dataList
 
     def __getZeroFunction(self, interval: list[PrecisionFloat]) -> Optional[PrecisionFloat]:
         if not self._existRoot:
@@ -162,17 +190,17 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
         if error <= 0:
             raise ValueError('error não pode ser 0 ou negativo.')
 
-        super()._initializeVariables(
-            expStr, interval, error)
+        # super()._initializeVariables(
+        #     expStr, interval, error)
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
-        rootList: list[PrecisionFloat] = []
+        dataList: list[SearchData] = []
         for intervals in listInterval:
-            rootList.append(
+            dataList.append(
                 self.__getZeroFunction(intervals))
             pass
-        return rootList
+        return dataList
 
     def __getZeroFunction(self, interval: list[PrecisionFloat]) -> Optional[PrecisionFloat]:
         if not self._existRoot:

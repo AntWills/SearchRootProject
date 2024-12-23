@@ -44,6 +44,9 @@ def testExp():
     exp3 = 'ePow(-x) - sin(x)'
     intervalo3 = [4, 7]
 
+    exp4 = 'sin(x) - ePow(-x)'
+    intervalo4 = [4, 10]
+
     # exp = 'x^2 -4*x + 4 - logN(x)'
     # intervalo = [Solve.expression(
     #     '0', None), Solve.expression('PI()/2 + 1', None)]
@@ -72,25 +75,36 @@ def testExp():
     #         SearchRootExp.getQuantIteraion()}'
     # )
 
-    function_str_1: str = 'x**3-x-1'
-    lista_teste_1: list[str] = [
-        '1/(x**2-1)',
-        '(x+1)**(1/3)'
-    ]
-    x_a_1, x_b_1 = 1, 2
+    # function_str_1: str = 'x**3-x-1'
+    # lista_teste_1: list[str] = [
+    #     '1/(x**2-1)',
+    #     '(x+1)**(1/3)'
+    # ]
+    # x_a_1, x_b_1 = 1, 2
 
-    searchData: SearchData = SearchRootExp.fixedPointMethod(
-        function_str_1, [x_a_1, x_b_1], lista_teste_1, 5)
-    print(f'\nRaiz(Aproximada): {searchData.root} iterações: '
-          + f'{searchData.quantIteration}')
+    searchDataList: SearchData = SearchRootExp.bisectionMethod(
+        exp4, intervalo4, 5)
 
-    print('\nOperações:\n\n')
-    # exibir_tabela(["Iteração", "xB", "xA",
-    #                "raiz aproximada", "F(Xn)", "erro"],
+    # searchDataList: SearchData = SearchRootExp.bisectionMethod(
+    #     exp1, intervalo1, 5)
+
+    if len(searchDataList) == 0:
+        print('Nenhuma raiz encontrada.')
+        return
+
+    for searchData in searchDataList:
+        print(f'\nRaiz(Aproximada): {searchData.root} iterações: '
+              + f'{searchData.quantIteration}')
+
+        print('\nOperações:\n')
+        exibir_tabela(["Iteração", "xB", "xA",
+                       "raiz aproximada", "F(Xn)", "erro"],
+                      searchData.valuesPerIteration, error)
+
+        print('\n----------------------------------------------------\n')
+
+    # exibir_tabela(["Iteração", "Xn", "F(Xn)", "erro", "Xn+1 = G(Xn)",],
     #               searchData.valuesPerIteration, 15)
-
-    exibir_tabela(["Iteração", "Xn", "F(Xn)", "erro", "Xn+1 = G(Xn)",],
-                  searchData.valuesPerIteration, 15)
 
     # root = SearchRootExp.falsePositionMethod(exp, intervalo, error)
     # print(

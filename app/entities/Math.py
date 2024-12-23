@@ -133,7 +133,6 @@ class Function():
 
     def __str__(self) -> str:
         return self.exp
-
     pass
 
 
