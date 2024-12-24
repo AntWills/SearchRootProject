@@ -237,37 +237,38 @@ class FalsePositionMethodRootSolver(BaseRootSolver):
 
 
 class FixedPointMethodRootSolver(BaseRootSolver):
+    def __init__(self, expStr: str, interval: list[PrecisionFloat],
+                 listExpGx: list[str],
+                 error: int):
+        super().__init__(expStr, interval, error)
+        self.__listExpGx = listExpGx
+
     def solve(self) -> Optional[list[SearchData]]:
         super()._adjustIntervalIfNotImageExist()
         listInterval = super()._checkAndFindInterval()
 
         dataList: list[SearchData] = []
-        for intervals in listInterval:
+        for interval in listInterval:
             super()._initializeVariables()
-            data = SearchData(
-                self.__getZeroFunction(intervals),
-                self._cauntIteration,
-                self._iterationValues
-            )
-            dataList.append(data)
+            funGx = self.__getExpThatConverges(interval)
 
+            if funGx:
+                data = SearchData(
+                    self.__getZeroFunction(interval, funGx),
+                    self._cauntIteration,
+                    self._iterationValues,
+                    funGx
+                )
+                dataList.append(data)
             pass
         return dataList
 
-    def _initializeVariables(self, expStr: str, interval: Optional[list[float]],
-                             listExpGx: list[str],
-                             error: int):
-        super()._initializeVariables(expStr, interval, error)
-        self.__funGx = self.__getExpThatConverges(listExpGx)
-
-        pass
-
-    def __getExpThatConverges(self, listExpGx: list[str]) -> Optional[Function]:
-        for exp in listExpGx:
+    def __getExpThatConverges(self, interval: list[PrecisionFloat]) -> Optional[Function]:
+        for exp in self.__listExpGx:
             fun = Function(exp)
 
-            img_a = fun.getImageOfDerivate(self._xA)
-            img_b = fun.getImageOfDerivate(self._xB)
+            img_a = fun.getImageOfDerivate(interval[1])
+            img_b = fun.getImageOfDerivate(interval[0])
 
             if not img_a == None and not img_b == None:
                 if abs(img_a) < 1 and abs(img_b) < 1:
@@ -275,12 +276,13 @@ class FixedPointMethodRootSolver(BaseRootSolver):
             pass
         return None
 
-    def __getZeroFunction(self, interval: list[PrecisionFloat]) -> Optional[PrecisionFloat]:
+    def __getZeroFunction(self, interval: list[PrecisionFloat], funGx: Function) -> Optional[PrecisionFloat]:
         hypothesis = (interval[0] + interval[1]) / \
             PrecisionFloat('2', PrecisionFloat.getDps())
 
         fun: Function = self._function
-        funGx: Function = self.__funGx
+        rootIsNegative: bool = True if (
+            interval[1] < 0 and interval[0] < 0) else False
 
         currentX: PrecisionFloat = hypothesis
         while True:
@@ -288,9 +290,12 @@ class FixedPointMethodRootSolver(BaseRootSolver):
             absImageValue = fun.getAbsImage(currentX)
 
             if absImageValue < self._errorPrecisionFloat:
-                return currentX
+                return super()._PrecisionFloatTruncate(currentX)
 
             nextX = funGx.getImage(currentX)
+
+            if rootIsNegative:
+                nextX *= -1
 
             # print(f'X{self._cauntIteration} = {currentX} : {funGx}'
             #       + f' => X{self._cauntIteration+1} = {nextX}'

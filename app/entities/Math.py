@@ -96,8 +96,8 @@ class Function():
         # fun = sympify(exp)
 
         # self.derivative: str = str(diff(fun, x))
-        self.derivative: str = None
         self.exp = exp
+        self.derivative: str = None
         pass
 
     def getImage(self, xValue: PrecisionFloat) -> PrecisionFloat:
@@ -126,7 +126,7 @@ class Function():
                 fun = sympify(self.exp)
 
                 self.derivative = str(diff(fun, x))
-
+            # print(f'Derivada: {self.derivative}')
             return ExpressionSolver.expression(self.derivative, xValue)
         except:
             return None

@@ -4,6 +4,7 @@ from app.test.testRoot import *
 from app.ui.menuLoop import menuLopp
 
 testExp()
+# test()
 
 # print(f'\n\nlen: {len("5.72499000000000000000000")}')
 # menuLopp()

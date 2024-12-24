@@ -1,7 +1,6 @@
-from ..entities.Math import ExpressionSolver, Math
+from ..entities.Math import *
 from ..entities.SearchRootExp import *
-from sympy import *
-
+from sympy import Float, floor, Rational
 import re
 from prettytable import PrettyTable
 
@@ -41,12 +40,19 @@ def testExp():
     exp2 = 'arcTan(x) + x^2 - 4'
     intervalo2 = [-6, 3]
 
-    exp3 = 'ePow(-x) - sin(x)'
-    intervalo3 = [4, 7]
+    # exp3 = 'ePow(-x) - sin(x)'
+    exp3_a = 'sin(x) - exp(-x)'
+    # intervalo3 = [4, 7]
+    intervalo3 = [4, 10]
+    listExpGx3: list[str] = [
+        'asin(exp(-x))'
+    ]
 
     exp4 = 'sin(x) - ePow(-x)'
     intervalo4 = [4, 10]
-
+    listExpGx4: list[str] = [
+        'arcSin(ePow(-x))'
+    ]
     # exp = 'x^2 -4*x + 4 - logN(x)'
     # intervalo = [Solve.expression(
     #     '0', None), Solve.expression('PI()/2 + 1', None)]
@@ -75,15 +81,23 @@ def testExp():
     #         SearchRootExp.getQuantIteraion()}'
     # )
 
-    # function_str_1: str = 'x**3-x-1'
-    # lista_teste_1: list[str] = [
-    #     '1/(x**2-1)',
-    #     '(x+1)**(1/3)'
-    # ]
-    # x_a_1, x_b_1 = 1, 2
+    function_str_1: str = 'x**3-x-1'
+    lista_teste_1: list[str] = [
+        '1/(x**2-1)',
+        '(x+1)**(1/3)'
+    ]
+    x_a_1, x_b_1 = 1, 2
 
-    searchDataList: SearchData = SearchRootExp.falsePositionMetho(
-        exp4, intervalo4, 5)
+    function_str_2: str = 'x**4-x-10'
+    lista_teste_2: list[str] = [
+        'x**4-10',
+        '10/(x**3-1)',
+        '(x+10)**(1/4)'
+    ]
+    x_a_2, x_b_2 = -2, 2
+
+    searchDataList: list[SearchData] = SearchRootExp.fixedPointMethod(
+        exp3_a, intervalo3, listExpGx3, 5)
 
     # searchDataList: SearchData = SearchRootExp.bisectionMethod(
     #     exp1, intervalo1, 5)
@@ -97,8 +111,12 @@ def testExp():
               + f'{searchData.quantIteration}')
 
         print('\nOperações:\n')
-        exibir_tabela(["Iteração", "xB", "xA",
-                       "raiz aproximada", "F(Xn)", "erro"],
+        # exibir_tabela(["Iteração", "xB", "xA",
+        #                "raiz aproximada", "F(Xn)", "erro"],
+        #               searchData.valuesPerIteration, 15)
+
+        exibir_tabela(["Iteração", "Xn", f"F(Xn) = {function_str_2}",
+                       "erro", f"Xn+1 = G(Xn) = {searchData.funGx}"],
                       searchData.valuesPerIteration, 15)
 
         print('\n###########################################################################\n')
@@ -168,9 +186,9 @@ def testConversao():
 
 
 def test():
-
-    exp = 'ePow(-x) - sin(x)'
-    print(ExpressionSolver.expression(exp, 0))
+    exp = 'sin(x) - ePow(-x)'
+    fun = Function('sin(x) - exp(-x)')
+    print(fun.getImageOfDerivate(PrecisionFloat(2)))
 
 
 def test1():
